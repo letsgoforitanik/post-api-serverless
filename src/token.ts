@@ -14,7 +14,7 @@ export async function generateToken(event: ApiGatewayEvent) {
 
     const { email, password } = payload;
 
-    if (email !== 'letsgoforitanik@gmail.com' || password !== 'Hydrogen2') {
+    if (email !== 'letsgoforitanik@gmail.com' || password !== 'Federer') {
         return {
             statusCode: 404,
             headers: { 'Content-Type': 'application/json' },
