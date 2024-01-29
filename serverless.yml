@@ -1,0 +1,63 @@
+service: post-api-sls
+frameworkVersion: "3"
+
+provider:
+    name: aws
+    region: ap-south-1
+    runtime: nodejs20.x
+    memorySize: 128
+    iam:
+        role:
+            statements:
+                - Effect: Allow
+                  Action:
+                      - dynamodb:*
+                  Resource: "*"
+    httpApi:
+        authorizers:
+            tokenAuthorizer:
+                type: request
+                functionName: authenticate-token
+                identitySource: $request.header.Authorization
+    layers:
+        - arn:aws:lambda:ap-south-1:297436977708:layer:post-api-node-modules:1
+
+package:
+    exclude:
+        - node_modules/**
+        - src/**
+
+functions:
+    authenticate-token:
+        handler: dist/token.authenticateToken
+
+    generate-token:
+        handler: dist/token.generateToken
+        events:
+            - httpApi:
+                  method: POST
+                  path: /auth-token/create
+
+    create-post:
+        handler: dist/post-api.createPost
+        events:
+            - httpApi:
+                  method: POST
+                  path: /posts
+                  authorizer: tokenAuthorizer
+
+    get-posts:
+        handler: dist/post-api.getPosts
+        events:
+            - httpApi:
+                  method: GET
+                  path: /posts
+                  authorizer: tokenAuthorizer
+
+    get-post-by-id:
+        handler: dist/post-api.getPostById
+        events:
+            - httpApi:
+                  method: GET
+                  path: /posts/{id}
+                  authorizer: tokenAuthorizer
